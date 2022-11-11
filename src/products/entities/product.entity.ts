@@ -1,4 +1,5 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { ProductImage } from './product-image.entity';
 
 @Entity()
 export class Product {
@@ -40,7 +41,25 @@ export class Product {
     @Column('text')
     gender: string;
 
-    private slugTransform(slug:string) {
+    @Column('text', {
+        array:true,
+        default: []
+    })
+    tags: string[];
+
+    //un producto puede tener muchas imagenes
+    @OneToMany(
+        () => ProductImage,
+        (productImage) => productImage.product,
+
+        //cada vez que se use un metodo find para buscar un producto, el eager me trae las relaciones automaticamente,
+        //pero si se usa el querybuilder NO
+
+        {cascade: true, eager: true} // si elimino un producto, me elimina las imagenes asociadas a el
+    )
+    images?: ProductImage[];
+
+    private slugTransform(slug: string) {
 
         this.slug = this.slug
             .toLowerCase()

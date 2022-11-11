@@ -39,4 +39,14 @@ export class CreateProductDto {
     @IsString()
     @MinLength(1)
     title: string;
+
+    @IsString({ each: true })
+    @IsArray()
+    @IsOptional()
+    tags?: string[]; // product entity especifica que el default = [], entonces pasa a ser opcional
+    
+    @IsString({ each: true })
+    @IsArray()
+    @IsOptional()
+    images?: string[];   
 }
