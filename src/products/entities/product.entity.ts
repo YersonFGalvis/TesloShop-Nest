@@ -1,7 +1,7 @@
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ProductImage } from './product-image.entity';
 
-@Entity({name: 'products'})
+@Entity({ name: 'products' })
 export class Product {
 
     @PrimaryGeneratedColumn('uuid')
@@ -42,7 +42,7 @@ export class Product {
     gender: string;
 
     @Column('text', {
-        array:true,
+        array: true,
         default: []
     })
     tags: string[];
@@ -55,7 +55,7 @@ export class Product {
         //cada vez que se use un metodo find para buscar un producto, el eager me trae las relaciones automaticamente,
         //pero si se usa el querybuilder NO
 
-        {cascade: true, eager: true} // si elimino un producto, me elimina las imagenes asociadas a el
+        { cascade: true, eager: true } // si elimino un producto, me elimina las imagenes asociadas a el
     )
     images?: ProductImage[];
 
