@@ -7,6 +7,7 @@ import { Product } from './entities/product.entity';
 import { PaginationDto } from '../common/dtos/pagination.dto';
 import { validate as isUUID } from 'uuid'
 import { ProductImage } from './entities/product-image.entity';
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class ProductsService {
@@ -29,7 +30,7 @@ export class ProductsService {
 
   ) { }
 
-  async create(createProductDto: CreateProductDto) {
+  async create(createProductDto: CreateProductDto, user: User) {
 
     try {
 
@@ -38,7 +39,8 @@ export class ProductsService {
       //crea la instancia del producto con sus propiedades, no guarda en DB
       const product = this.productRepository.create({
         ...productDetails,
-          images: images.map( image => this.productImageRepository.create({ url: image}))
+        user,
+        images: images.map(image => this.productImageRepository.create({ url: image }))
       });
       //guardar en DB
       await this.productRepository.save(product);
@@ -64,9 +66,9 @@ export class ProductsService {
 
     });
 
-    return products.map( ({images, ...rest}) => ({
+    return products.map(({ images, ...rest }) => ({
       ...rest,
-      images: images.map( image => image.url )
+      images: images.map(image => image.url)
     }))
   }
 
@@ -99,21 +101,21 @@ export class ProductsService {
     return product;
   }
 
-  async findOnePlain(term:string){
+  async findOnePlain(term: string) {
 
-    const {images = [], ...rest} = await this.findOne( term );
+    const { images = [], ...rest } = await this.findOne(term);
 
-    return{
+    return {
       ...rest,
       images: images.map(image => image.url)
     }
   }
 
-        //este endpoint sobreescribe las imagenes existentes si se le pasan nuevas
-        //funciona asi por preferencia del profesor nada mas, no esta bien ni mal
-  async update(id: string, updateProductDto: UpdateProductDto) {
+  //este endpoint sobreescribe las imagenes existentes si se le pasan nuevas
+  //funciona asi por preferencia del profesor nada mas, no esta bien ni mal
+  async update(id: string, updateProductDto: UpdateProductDto, user: User) {
 
-    const {images , ...toUpdate } = updateProductDto;
+    const { images, ...toUpdate } = updateProductDto;
 
 
 
@@ -133,11 +135,12 @@ export class ProductsService {
       if (images) {
         //pueda poner product: {id}, ya que la tabla esta referenciada
         //y el query sabe que me refiero a la foranea 
-        await queryRunner.manager.delete( ProductImage, {product: {id}} )
-        product.images = images.map( 
-          image => this.productImageRepository.create({url:image}))
+        await queryRunner.manager.delete(ProductImage, { product: { id } })
+        product.images = images.map(
+          image => this.productImageRepository.create({ url: image }))
       }
       //no impacta la BD
+      product.user = user;
       await queryRunner.manager.save(product);
 
       //si todo salio bien, se hace el commit de la transaction
@@ -149,13 +152,13 @@ export class ProductsService {
 
       return this.findOnePlain(id);
 
-    }catch (error) {
+    } catch (error) {
 
       //si algo salio mal, no queremos guardar algun cambio en la bd,
       //hacemos rollback y no guardamos cambios
       await queryRunner.rollbackTransaction();
-       //cerramos el queryrunner y no vuelve a funcionar
-       await queryRunner.release();
+      //cerramos el queryrunner y no vuelve a funcionar
+      await queryRunner.release();
 
       this.handleExceptions(error);
     }
@@ -181,15 +184,15 @@ export class ProductsService {
   }
 
   //borrar todos los productos, USARLO PREFERIBLEMENTE EN DESARROLLO
-  async deleteAllProducts(){
+  async deleteAllProducts() {
     const query = this.productRepository.createQueryBuilder('product');
 
     try {
       return await query
-      .delete()
-      .where({})
-      .execute();
-      
+        .delete()
+        .where({})
+        .execute();
+
     } catch (error) {
       this.handleExceptions(error);
     }
