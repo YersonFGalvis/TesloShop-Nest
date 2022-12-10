@@ -5,7 +5,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { fileNamer,fileFilter} from './helpers';
 import { diskStorage } from 'multer';
 import { ConfigService } from '@nestjs/config';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Files') //agrupar estos endpoints
 @Controller('files')
 export class FilesController {
   constructor(

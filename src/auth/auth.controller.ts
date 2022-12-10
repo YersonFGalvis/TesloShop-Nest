@@ -1,16 +1,21 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Headers, SetMetadata, Req } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiTags } from '@nestjs/swagger';
+
 import { IncomingHttpHeaders } from 'http';
+
 import { AuthService } from './auth.service';
 import { Auth } from './decorators';
 import { GetRawHeaders } from './decorators/get-rawHeaders.decorator';
 import { GetUser } from './decorators/get-user.decorator';
 import { RoleProtected } from './decorators/role-protected.decorator';
+
 import { CreateUserDto,LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { UserRoleGuard } from './guards/user-role/user-role.guard';
 import { ValidRoles } from './interfaces/valid-roles';
 
+@ApiTags('Auth') //agrupar estos endpoints
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
